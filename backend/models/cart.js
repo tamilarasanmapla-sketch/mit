@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 const cartSchema = new mongoose.Schema(
   {
     customer: {
@@ -26,9 +25,9 @@ const cartSchema = new mongoose.Schema(
           default: 1,
         },
         subtotal: {
-            type: Number,
-            required: true,
-        }
+          type: Number,
+          required: true,
+        },
       },
     ],
   },

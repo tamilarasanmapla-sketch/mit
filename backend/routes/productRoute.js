@@ -13,7 +13,12 @@ const { authenticate } = require("../middleware/authentication.js");
 router.get("/getallproducts", getProducts);
 router.get("/getproduct/:id", getProductById);
 router.post("/createproduct", authenticate, authorize("seller"), createProduct);
-router.put("/updateproduct/:id", authenticate, authorize("seller"), updateProductById);
+router.put(
+  "/updateproduct/:id",
+  authenticate,
+  authorize("seller"),
+  updateProductById,
+);
 router.delete(
   "/deleteproduct/:id",
   authenticate,

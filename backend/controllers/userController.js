@@ -27,7 +27,7 @@ exports.login = asyncErrorHandler(async (req, res, next) => {
   }
 
   const user = await UserService.loginUser(email, password);
-  
+
   const { accessToken } = generateToken(user._id, res);
 
   res.status(200).json({
@@ -67,51 +67,50 @@ exports.createUser = asyncErrorHandler(async (req, res, next) => {
     return next(new HandleError("Please provide all required fields", 400));
   }
 
+  const newUser = await UserService.createUser({
+    userName,
+    email,
+    access,
+    password,
+  });
 
-    const newUser = await UserService.createUser({ userName, email, access, password });
-    
-    // Generate token logic remains in controller as it deals with response/cookies
-    const { accessToken } = generateToken(newUser._id, res);
-    
-    res.status(201).json({
-      success: true,
-      message: "User created successfully",
-      user: {
-        _id: newUser._id,
-        userName: newUser.userName,
-        email: newUser.email,
-        access: newUser.access,
-        accessToken,
-      },
-    });
- 
+  // Generate token logic remains in controller as it deals with response/cookies
+  const { accessToken } = generateToken(newUser._id, res);
+
+  res.status(201).json({
+    success: true,
+    message: "User created successfully",
+    user: {
+      _id: newUser._id,
+      userName: newUser.userName,
+      email: newUser.email,
+      access: newUser.access,
+      accessToken,
+    },
+  });
 });
 
 // Update user by ID
 exports.updateUserById = asyncErrorHandler(async (req, res, next) => {
   const { updateUserName, updatePassword } = req.body;
   if (!updateUserName && !updatePassword) {
-      return next(new HandleError("Please provide fields to update", 400));
+    return next(new HandleError("Please provide fields to update", 400));
   }
 
-  
-    const updatedUser = await UserService.updateUser(req.params.id, { 
-        userName: updateUserName, 
-        password: updatePassword 
-    });
+  const updatedUser = await UserService.updateUser(req.params.id, {
+    userName: updateUserName,
+    password: updatePassword,
+  });
 
-    res.json({
-        success: true,
-        message: "User updated successfully",
-        user: updatedUser,
-    });
- 
+  res.json({
+    success: true,
+    message: "User updated successfully",
+    user: updatedUser,
+  });
 });
 
 // Delete user by ID
 exports.deleteUserById = asyncErrorHandler(async (req, res, next) => {
-
-    await UserService.deleteUser(req.params.id);
-    res.json({ success: true, message: "User deleted successfully" });
- 
+  await UserService.deleteUser(req.params.id);
+  res.json({ success: true, message: "User deleted successfully" });
 });

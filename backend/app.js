@@ -18,13 +18,13 @@ app.use(helmet());
 
 // Logging
 if (process.env.NODE_ENV === "DEVELOPMENT") {
-   app.use(morgan("dev"));
+  app.use(morgan("dev"));
 }
 
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100, // limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
 
@@ -41,4 +41,4 @@ app.use("/api/orders", orderRouter);
 // Error Middleware
 app.use(errorHandler);
 
-module.exports = app; 
+module.exports = app;

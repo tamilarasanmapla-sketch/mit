@@ -11,25 +11,16 @@ exports.authenticate = asyncErrorHandler(async (req, res, next) => {
       new handleError("Authentication token not provided. Please log in.", 401),
     );
   }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select("-password");
-
-    if (!user) {
-      return next(
-        new handleError(
-          "User belonging to this token does no longer exist.",
-          401,
-        ),
-      );
-    }
-
-    req.user = user;
-    next();
-  } catch (error) {
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const user = await User.findById(decoded.id).select("-password");
+  if (!user) {
     return next(
-      new handleError("Invalid or expired token. Please log in again.", 401),
+      new handleError(
+        "User belonging to this token does no longer exist.",
+        401,
+      ),
     );
   }
+  req.user = user;
+  next();
 });

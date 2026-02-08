@@ -8,7 +8,7 @@ exports.generateToken = (userId, res) => {
   res.cookie("jwt", accessToken, {
     maxAge: 15 * 60 * 1000,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "PRODUCTION"? true : false,
+    secure: process.env.NODE_ENV === "PRODUCTION" ? true : false,
     sameSite: "strict",
   });
 
@@ -18,7 +18,7 @@ exports.generateToken = (userId, res) => {
   res.cookie("jwtrefresh", refreshToken, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "PRODUCTION"? true : false,
+    secure: process.env.NODE_ENV === "PRODUCTION" ? true : false,
     sameSite: "strict",
   });
 

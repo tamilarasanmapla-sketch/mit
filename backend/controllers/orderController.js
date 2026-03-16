@@ -4,33 +4,11 @@ const handleError = require("../utils/handleError");
 
 // Create new Order
 exports.newOrder = asyncErrorHandler(async (req, res, next) => {
-  const {
-    shippingInfo,
-    orderItems,
-    paymentInfo,
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
-  } = req.body;
-
-  const orderData = {
-    shippingInfo,
-    orderItems,
-    paymentInfo,
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
-    paidAt: Date.now(),
-    user: req.user._id,
-  };
-
-  const order = await OrderService.createOrder(orderData);
+  const orders = await OrderService.createOrders(req.body, req.user._id);
 
   res.status(201).json({
     success: true,
-    order,
+    orders,
   });
 });
 
@@ -40,6 +18,14 @@ exports.getSingleOrder = asyncErrorHandler(async (req, res, next) => {
 
   if (!order) {
     return next(new handleError("Order not found with this Id", 404));
+  }
+
+  // Check authorization
+  const isOwner = order.user && order.user._id.toString() === req.user._id.toString();
+  const isSeller = order.orderItems.some(item => item.seller.toString() === req.user._id.toString());
+  
+  if (!isOwner && !isSeller) {
+    return next(new handleError("Not authorized to view this order", 403));
   }
 
   res.status(200).json({
@@ -69,14 +55,34 @@ exports.getAllOrders = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
-// Update Order Status -- Admin
+// Update Order Status -- Seller
 exports.updateOrder = asyncErrorHandler(async (req, res, next) => {
+  const orderCheck = await OrderService.getSingleOrder(req.params.id);
+  if (!orderCheck) {
+    return next(new handleError("Order not found", 404));
+  }
+  
+  const isSeller = orderCheck.orderItems.some(item => item.seller.toString() === req.user._id.toString());
+  if (!isSeller) {
+     return next(new handleError("Not authorized to update this order", 403));
+  }
+
   const order = await OrderService.updateOrder(req.params.id, req.body.status);
   res.status(200).json({ success: true, order });
 });
 
-// Delete Order -- Admin
+// Delete Order -- Seller
 exports.deleteOrder = asyncErrorHandler(async (req, res, next) => {
+  const orderCheck = await OrderService.getSingleOrder(req.params.id);
+  if (!orderCheck) {
+    return next(new handleError("Order not found", 404));
+  }
+  
+  const isSeller = orderCheck.orderItems.some(item => item.seller.toString() === req.user._id.toString());
+  if (!isSeller) {
+     return next(new handleError("Not authorized to delete this order", 403));
+  }
+
   await OrderService.deleteOrder(req.params.id);
   res.status(200).json({ success: true });
 });

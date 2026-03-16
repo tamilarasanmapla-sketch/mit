@@ -4,7 +4,7 @@ const handleError = require("../utils/handleError");
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
 
 exports.authenticate = asyncErrorHandler(async (req, res, next) => {
-  const token = req.cookies.token || req.cookies.jwt || req.cookies.jwtrefresh;
+  const token = req.cookies.token || req.cookies.jwt;
 
   if (!token) {
     return next(

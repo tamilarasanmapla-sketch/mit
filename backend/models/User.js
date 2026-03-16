@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
     },
     access: {
       type: String,
-      enum: ["user", "seller", "admin"],
+      enum: ["user", "seller"],
       default: "user",
     },
     password: {
@@ -31,9 +31,10 @@ const bcrypt = require("bcryptjs");
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
-    next();
+    return next();
   }
   this.password = await bcrypt.hash(this.password, 10);
+  next();
 });
 
 userSchema.methods.comparePassword = async function (enteredPassword) {

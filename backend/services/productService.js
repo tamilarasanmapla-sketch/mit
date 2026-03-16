@@ -1,8 +1,20 @@
 const Product = require("../models/Product");
+const ApiFilter = require("../utils/apiFilter");
+const handleError = require("../utils/handleError");
 
-// Get all products
-exports.getAllProducts = async () => {
-  return await Product.find();
+// Get products
+exports.getProducts = async (queryStr, resPerPage) => {
+  const productCount = await Product.countDocuments();
+  const apiFilter = new ApiFilter(Product.find(), queryStr).search().filter();
+
+  // Get filtered products count before pagination
+  const filteredProductsCount = await apiFilter.query.clone().countDocuments();
+
+  // Apply pagination
+  apiFilter.pagination(resPerPage);
+  const products = await apiFilter.query.clone();
+
+  return { products, productCount, filteredProductsCount };
 };
 
 // Create a new product
@@ -26,7 +38,7 @@ exports.updateProduct = async (id, updateData, sellerId) => {
 
   // Verify ownership
   if (product.seller.toString() !== sellerId.toString()) {
-    throw new Error("You are not authorized to update this product");
+    throw new handleError("You are not authorized to update this product", 403);
   }
 
   Object.keys(updateData).forEach((key) => {
@@ -43,7 +55,7 @@ exports.deleteProduct = async (id, sellerId) => {
 
   // Verify ownership
   if (product.seller.toString() !== sellerId.toString()) {
-    throw new Error("You are not authorized to delete this product");
+    throw new handleError("You are not authorized to delete this product", 403);
   }
 
   return await product.deleteOne();

@@ -12,7 +12,9 @@ exports.generateToken = (userId, res) => {
     sameSite: "strict",
   });
 
-  const refreshToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+  const refreshSecret =
+    process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET + "_refresh";
+  const refreshToken = jwt.sign({ id: userId }, refreshSecret, {
     expiresIn: "7d",
   });
   res.cookie("jwtrefresh", refreshToken, {

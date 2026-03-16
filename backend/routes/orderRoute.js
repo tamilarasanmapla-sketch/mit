@@ -3,7 +3,6 @@ const {
   newOrder,
   getSingleOrder,
   myOrders,
-  getAllOrders,
   updateOrder,
   deleteOrder,
 } = require("../controllers/orderController");
@@ -21,9 +20,5 @@ router
   .get(authenticate, getSingleOrder)
   .put(authenticate, authorize("seller"), updateOrder)
   .delete(authenticate, authorize("seller"), deleteOrder);
-
-router
-  .route("/admin/orders")
-  .get(authenticate, authorize("admin"), getAllOrders);
 
 module.exports = router;

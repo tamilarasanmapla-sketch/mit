@@ -21,6 +21,12 @@ exports.addToCart = asyncErrorHandler(async (req, res, next) => {
     );
   }
 
+  if (quantity <= 0 || !Number.isInteger(quantity)) {
+    return next(
+      new handleError("Quantity must be a positive integer", 400),
+    );
+  }
+
   const cart = await CartService.addItemToCart(
     req.user._id,
     productId,

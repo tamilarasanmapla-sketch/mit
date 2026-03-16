@@ -48,7 +48,19 @@ const updateUser = async (id, updateData) => {
   if (!user) throw new handleError("User not found", 404);
 
   if (updateData.userName) user.userName = updateData.userName;
-  if (updateData.password) user.password = updateData.password;
+  if (updateData.password) {
+    if (!updateData.oldPassword) {
+      throw new handleError("Current password required to change password", 400);
+    }
+    if (updateData.password.length < 8) {
+      throw new handleError("New password must be at least 8 characters", 400);
+    }
+    const isPasswordMatched = await user.comparePassword(updateData.oldPassword);
+    if (!isPasswordMatched) {
+      throw new handleError("Current password is incorrect", 401);
+    }
+    user.password = updateData.password;
+  }
 
   return await user.save();
 };

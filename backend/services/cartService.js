@@ -1,5 +1,6 @@
 const Cart = require("../models/cart");
 const Product = require("../models/Product");
+const handleError = require("../utils/handleError");
 
 // Get cart by user ID
 exports.getCartByUserId = async (userId) => {
@@ -9,12 +10,13 @@ exports.getCartByUserId = async (userId) => {
 // Add item to cart
 exports.addItemToCart = async (userId, productId, quantity, sellerId) => {
   const product = await Product.findById(productId);
-  if (!product) throw new Error("Product not found");
+  if (!product) throw new handleError("Product not found", 404);
 
   // Check stock availability
   if (product.stock < quantity) {
-    throw new Error(
+    throw new handleError(
       `Insufficient stock. Only ${product.stock} items available`,
+      400,
     );
   }
 
@@ -36,8 +38,9 @@ exports.addItemToCart = async (userId, productId, quantity, sellerId) => {
 
       // Check if total quantity exceeds stock
       if (product.stock < newQuantity) {
-        throw new Error(
+        throw new handleError(
           `Insufficient stock. Only ${product.stock} items available`,
+          400,
         );
       }
 
@@ -74,9 +77,11 @@ exports.addItemToCart = async (userId, productId, quantity, sellerId) => {
 // Remove item from cart
 exports.removeItemFromCart = async (userId, productId) => {
   let cart = await Cart.findOne({ customer: userId });
-  if (!cart) throw new Error("Cart not found");
+  if (!cart) throw new handleError("Cart not found", 404);
 
-  cart.items = cart.items.filter((item) => item.product != productId);
+  cart.items = cart.items.filter(
+    (item) => item.product.toString() !== productId.toString(),
+  );
   return await cart.save();
 };
 

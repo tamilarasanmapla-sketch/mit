@@ -9,11 +9,11 @@ import {
   ArrowLeft,
   AlertCircle,
 } from "lucide-react";
-import { useGetOrderQuery } from "../slices/orderApi";
+import { useGetOrderDetailsQuery } from "../slices/orderApi";
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
-  const { data, isLoading, isError, error } = useGetOrderQuery(id, {
+  const { data, isLoading, isError, error } = useGetOrderDetailsQuery(id, {
     skip: !id,
   });
 

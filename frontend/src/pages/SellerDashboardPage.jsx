@@ -10,16 +10,14 @@ import {
   useUpdateProductMutation,
   useDeleteProductMutation,
 } from "../slices/productsApi";
-import {
-  useUpdateOrderMutation,
-} from "../slices/orderApi";
+import SellerOrdersTable from "../components/SellerOrdersTable";
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from "recharts";
 import {
   DollarSign, ShoppingCart, Package, Clock, AlertTriangle,
-  LayoutDashboard, PackageOpen, Truck, Plus, Pencil, Trash2,
+  LayoutDashboard, Truck, Plus, Pencil, Trash2,
   X, Save, TrendingUp, BarChart3,
 } from "lucide-react";
 
@@ -52,25 +50,17 @@ const SellerDashboardPage = () => {
   const [productForm, setProductForm] = useState({
     productName: "", description: "", price: "", category: "electronics", stock: "",
   });
-  const [orderSearch, setOrderSearch] = useState("");
-  const [trackingInput, setTrackingInput] = useState({});
 
   const { data, isLoading, refetch } = useGetSellerStatsQuery();
   const [createProduct] = useCreateProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
-  const [updateOrder] = useUpdateOrderMutation();
 
   if (!user || user.access !== "seller") return <Navigate to="/" replace />;
 
   const stats = data?.stats || {};
   const products = data?.products || [];
   const orders = data?.orders || [];
-
-  const filteredOrders = orders.filter((o) =>
-    o._id?.toLowerCase().includes(orderSearch.toLowerCase()) ||
-    o.orderStatus?.toLowerCase().includes(orderSearch.toLowerCase())
-  );
 
   const handleProductSubmit = async (e) => {
     e.preventDefault();
@@ -110,16 +100,6 @@ const SellerDashboardPage = () => {
       price: p.price, category: p.category, stock: p.stock,
     });
     setShowAddProduct(true);
-  };
-
-  const handleOrderStatus = async (id, status) => {
-    try {
-      await updateOrder({ id, status }).unwrap();
-      toast.success(`Order updated to ${status}!`);
-      refetch();
-    } catch (err) {
-      toast.error(err?.data?.message || "Failed to update order");
-    }
   };
 
   if (isLoading) {
@@ -296,70 +276,7 @@ const SellerDashboardPage = () => {
 
         {/* ── ORDERS TAB ── */}
         {activeTab === "orders" && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <h3 className="text-lg font-bold text-gray-800">Order Management</h3>
-              <input type="text" placeholder="Search by ID or status..." value={orderSearch}
-                onChange={(e) => setOrderSearch(e.target.value)}
-                className="px-4 py-2 border border-gray-200 rounded-xl text-sm w-full sm:w-64 focus:ring-2 focus:ring-teal-300 outline-none" />
-            </div>
-            {filteredOrders.length === 0 ? (
-              <div className="p-10 text-center text-gray-400">No orders found</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      <th className="px-5 py-3">Order ID</th>
-                      <th className="px-5 py-3">Items</th>
-                      <th className="px-5 py-3">Total</th>
-                      <th className="px-5 py-3">Status</th>
-                      <th className="px-5 py-3">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {filteredOrders.map((o) => (
-                      <tr key={o._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-4 font-mono text-xs text-gray-600">#{o._id?.slice(-8)}</td>
-                        <td className="px-5 py-4 text-gray-700">{o.orderItems?.length || 0} items</td>
-                        <td className="px-5 py-4 font-semibold text-gray-800">₹{o.totalPrice?.toLocaleString()}</td>
-                        <td className="px-5 py-4">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            o.orderStatus === "Delivered" ? "bg-emerald-100 text-emerald-700" :
-                            o.orderStatus === "Shipped" ? "bg-blue-100 text-blue-700" :
-                            o.orderStatus === "Packed" ? "bg-purple-100 text-purple-700" :
-                            "bg-yellow-100 text-yellow-700"
-                          }`}>{o.orderStatus}</span>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex flex-wrap gap-1.5">
-                            {o.orderStatus === "Processing" && (
-                              <button onClick={() => handleOrderStatus(o._id, "Packed")}
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-purple-50 text-purple-600 rounded-lg text-xs font-semibold hover:bg-purple-100 transition-colors">
-                                <PackageOpen className="w-3.5 h-3.5" /> Pack
-                              </button>
-                            )}
-                            {o.orderStatus === "Packed" && (
-                              <button onClick={() => handleOrderStatus(o._id, "Shipped")}
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors">
-                                <Truck className="w-3.5 h-3.5" /> Ship
-                              </button>
-                            )}
-                            {o.orderStatus === "Shipped" && (
-                              <button onClick={() => handleOrderStatus(o._id, "Delivered")}
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-colors">
-                                <Package className="w-3.5 h-3.5" /> Deliver
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+          <SellerOrdersTable orders={orders} refetch={refetch} />
         )}
 
         {/* ── ANALYTICS TAB ── */}

@@ -3,12 +3,12 @@ const handleError = require("../utils/handleError");
 
 // Get all users
 const getAllUsers = async () => {
-  return await User.find().select("-password");
+  return await User.find();
 };
 
 // Get user by ID
 const getUserById = async (id) => {
-  const user = await User.findById(id).select("-password");
+  const user = await User.findById(id);
   if (!user) {
     throw new handleError("User not found", 404);
   }
@@ -19,12 +19,12 @@ const getUserById = async (id) => {
 const loginUser = async (email, password) => {
   const user = await User.findOne({ email });
   if (!user) {
-    throw new handleError("Invalid email or password", 401);
+    throw new handleError("Invalid email", 401);
   }
 
   const isPasswordMatched = await user.comparePassword(password);
   if (!isPasswordMatched) {
-    throw new handleError("Invalid email or password", 401);
+    throw new handleError("Invalid password", 401);
   }
 
   return user;
@@ -38,8 +38,8 @@ const createUser = async (userData) => {
     throw new handleError("User already exists", 400);
   }
 
-  const newUser = new User(userData);
-  return await newUser.save();
+  const newUser = await User.create(userData);
+  return newUser;
 };
 
 // Update User

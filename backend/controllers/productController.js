@@ -4,7 +4,7 @@ const asyncErrorHandler = require("../utils/asyncErrorHandler");
 
 // Get products
 exports.getProducts = asyncErrorHandler(async (req, res, next) => {
-  const resPerPage = 8;
+  const resPerPage = 12;  
   const { products, productCount, filteredProductsCount } =
     await ProductService.getProducts(req.query, resPerPage);
 

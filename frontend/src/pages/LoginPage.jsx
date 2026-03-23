@@ -28,7 +28,9 @@ const LoginPage = () => {
     dispatch(setLoading(true));
 
     try {
-      const { data } = await axios.post("/api/users/login", formData);
+      const { data } = await axios.post("/api/users/login", formData, {
+        withCredentials: true,
+      });
       dispatch(setUser(data.user));
       toast.success("Logged in successfully!");
       navigate("/");

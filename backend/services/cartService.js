@@ -28,13 +28,15 @@ exports.addItemToCart = async (userId, productId, quantity, sellerId) => {
   if (cart) {
     // Cart exists for user
     const itemIndex = cart.items.findIndex(
-      (p) => p.product.toString() === productId.toString(),
+      (p) =>
+        p.product.toString() === productId.toString() &&
+        p.seller.toString() === sellerId.toString(),
     );
 
     if (itemIndex > -1) {
       // Product exists in the cart, update the quantity
       let productItem = cart.items[itemIndex];
-      const newQuantity = productItem.quantity + quantity;
+      const newQuantity = Math.max(1, productItem.quantity + quantity);
 
       // Check if total quantity exceeds stock
       if (product.stock < newQuantity) {
@@ -49,6 +51,10 @@ exports.addItemToCart = async (userId, productId, quantity, sellerId) => {
       cart.items[itemIndex] = productItem;
     } else {
       // Product does not exist in cart, add new item
+      // For new items, quantity must be positive
+      if (quantity < 1) {
+        throw new handleError("Initial quantity must be at least 1", 400);
+      }
       cart.items.push({
         product: productId,
         seller: sellerId,
@@ -58,7 +64,11 @@ exports.addItemToCart = async (userId, productId, quantity, sellerId) => {
     }
   } else {
     // No cart for user, create new cart
-    cart = new Cart({
+    // For new items, quantity must be positive
+    if (quantity < 1) {
+      throw new handleError("Initial quantity must be at least 1", 400);
+    }
+    cart = await Cart.create({
       customer: userId,
       items: [
         {
@@ -71,17 +81,20 @@ exports.addItemToCart = async (userId, productId, quantity, sellerId) => {
     });
   }
 
-  return await cart.save();
+  return cart;
 };
 
 // Remove item from cart
-exports.removeItemFromCart = async (userId, productId) => {
+exports.removeItemFromCart = async (userId, productId, sellerId) => {
   let cart = await Cart.findOne({ customer: userId });
   if (!cart) throw new handleError("Cart not found", 404);
 
-  cart.items = cart.items.filter(
-    (item) => item.product.toString() !== productId.toString(),
-  );
+  cart.items = cart.items.filter((item) => {
+    const sameProduct = item.product.toString() === productId.toString();
+    const sameSeller =
+      !sellerId || item.seller.toString() === sellerId.toString();
+    return !(sameProduct && sameSeller);
+  });
   return await cart.save();
 };
 

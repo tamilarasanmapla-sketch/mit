@@ -21,9 +21,9 @@ exports.addToCart = asyncErrorHandler(async (req, res, next) => {
     );
   }
 
-  if (quantity <= 0 || !Number.isInteger(quantity)) {
+  if (quantity === 0 || !Number.isInteger(quantity)) {
     return next(
-      new handleError("Quantity must be a positive integer", 400),
+      new handleError("Quantity must be a non-zero integer", 400),
     );
   }
 
@@ -38,9 +38,11 @@ exports.addToCart = asyncErrorHandler(async (req, res, next) => {
 
 // Remove from Cart
 exports.removeFromCart = asyncErrorHandler(async (req, res, next) => {
+  const { sellerId } = req.query;
   const cart = await CartService.removeItemFromCart(
     req.user._id,
     req.params.productId,
+    sellerId,
   );
   res.json({ success: true, cart });
 });

@@ -20,8 +20,10 @@ const ProfilePage = () => {
     try {
       const { data } = await axios.put(`/api/users/updateuser/${user._id}`, {
         updateUserName,
-        password: updatePassword || undefined,
+        updatePassword: updatePassword || undefined,
         oldPassword: oldPassword || undefined,
+      }, {
+        withCredentials: true,
       });
       dispatch(setUser(data.user));
       toast.success("Profile updated successfully!");
@@ -50,10 +52,10 @@ const ProfilePage = () => {
               </div>
             </div>
             <div className="ml-6 mb-2">
-              <h1 className="text-3xl font-extrabold text-white leading-none mb-2">
+              <h1 className="text-3xl font-extrabold text-gray-900 leading-none mb-2">
                 {user.userName}
               </h1>
-              <p className="text-blue-100 flex items-center font-medium">
+              <p className="text-gray-900 flex items-center font-medium">
                 <Shield className="size-4 mr-2" />
                 {user.access} Account
               </p>

@@ -99,22 +99,75 @@ exports.getAllOrders = async () => {
   return { orders, totalAmount };
 };
 
-// Update order status (Admin)
+// Update order status (Seller/Admin)
 exports.updateOrder = async (orderId, status) => {
   const order = await Order.findById(orderId);
   if (!order) throw new handleError("Order not found", 404);
 
-  if (order.orderStatus === "Delivered") {
-    throw new handleError("You have already delivered this order", 400);
+  const currentStatus = order.orderStatus;
+  const validStatuses = [
+    "Processing",
+    "Accepted",
+    "Packed",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+  ];
+
+  if (!validStatuses.includes(status)) {
+    throw new handleError("Invalid status", 400);
   }
 
-  order.orderStatus = status;
+  // Define valid transitions
+  const transitions = {
+    Processing: ["Accepted", "Packed", "Cancelled"],
+    Accepted: ["Packed", "Cancelled"],
+    Packed: ["Shipped", "Cancelled"],
+    Shipped: ["Delivered", "Cancelled"],
+    Delivered: [],
+    Cancelled: [],
+  };
 
-  if (status === "Delivered") {
-    order.deliveredAt = Date.now();
+  if (currentStatus === status) {
+    return order; // No change needed
   }
 
-  await order.save({ validateBeforeSave: false });
+  if (!transitions[currentStatus] || !transitions[currentStatus].includes(status)) {
+    throw new handleError(
+      `Cannot transition from ${currentStatus} to ${status}`,
+      400
+    );
+  }
+
+  // Handle Stock Reversal on Cancellation
+  if (status === "Cancelled") {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      for (const item of order.orderItems) {
+        await Product.findByIdAndUpdate(
+          item.product,
+          { $inc: { stock: item.quantity } },
+          { session }
+        );
+      }
+      order.orderStatus = status;
+      await order.save({ validateBeforeSave: false, session });
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  } else {
+    order.orderStatus = status;
+    if (status === "Delivered") {
+      order.deliveredAt = Date.now();
+    }
+    await order.save({ validateBeforeSave: false });
+  }
+
   return order;
 };
 

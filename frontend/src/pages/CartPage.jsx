@@ -33,18 +33,17 @@ const CartPage = () => {
     sellerId,
     change,
   ) => {
-    const newQuantity = currentQuantity + change;
-    if (newQuantity < 1) return;
+    if (currentQuantity + change < 1) return;
     try {
-      await updateCart({ productId, quantity: newQuantity, sellerId }).unwrap();
+      await updateCart({ productId, quantity: change, sellerId }).unwrap();
     } catch (err) {
       toast.error(err?.data?.message || "Failed to update quantity");
     }
   };
 
-  const handleRemove = async (productId) => {
+  const handleRemove = async (productId, sellerId) => {
     try {
-      await removeFromCart(productId).unwrap();
+      await removeFromCart({ productId, sellerId }).unwrap();
       toast.success("Item removed from cart");
     } catch (err) {
       toast.error(err?.data?.message || "Failed to remove item");
@@ -122,7 +121,7 @@ const CartPage = () => {
                     </p>
                   </div>
                   <button
-                    onClick={() => handleRemove(item.product?._id)}
+                    onClick={() => handleRemove(item.product?._id, item.seller)}
                     className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all rounded-xl"
                   >
                     <Trash2 className="size-5" />
@@ -140,7 +139,7 @@ const CartPage = () => {
                           -1,
                         )
                       }
-                      className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-500"
+                      className={`p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-500 ${item.quantity === 1 ? "cursor-not-allowed" : ""}`}
                     >
                       <Minus className="size-4" />
                     </button>

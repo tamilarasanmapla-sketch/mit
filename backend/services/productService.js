@@ -19,11 +19,11 @@ exports.getProducts = async (queryStr, resPerPage) => {
 
 // Create a new product
 exports.createProduct = async (productData, sellerId) => {
-  const product = new Product({
+  const product = await Product.create({
     ...productData,
     seller: sellerId,
   });
-  return await product.save();
+  return product;
 };
 
 // Get product by ID

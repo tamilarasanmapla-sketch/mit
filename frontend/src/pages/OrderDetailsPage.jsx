@@ -1,21 +1,18 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import Loader from "../components/Loader";
-import {
-  Package,
-  Calendar,
-  MapPin,
-  DollarSign,
-  ArrowLeft,
-  AlertCircle,
-} from "lucide-react";
-import { useGetOrderDetailsQuery } from "../slices/orderApi";
+import { Package, Calendar, MapPin, DollarSign, ArrowLeft, AlertCircle, Save } from "lucide-react";
+import { useGetOrderDetailsQuery, useUpdateOrderMutation } from "../slices/orderApi";
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
   const { data, isLoading, isError, error } = useGetOrderDetailsQuery(id, {
     skip: !id,
   });
+  const { user } = useSelector((s) => s.auth);
+  const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();
 
   if (isLoading) return <Loader />;
 
@@ -42,12 +39,37 @@ const OrderDetailsPage = () => {
   }
 
   const order = data.order;
+
+  const isSellerOfOrder = order.orderItems.some(
+    (item) => item.seller?.toString() === user?._id?.toString()
+  );
+
+  const handleStatusUpdate = async (newStatus) => {
+    try {
+      await updateOrder({ id: order._id, status: newStatus }).unwrap();
+      toast.success(`Order status updated to ${newStatus}`);
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to update status");
+    }
+  };
+
   const statusColors = {
     Processing: "bg-yellow-100 text-yellow-700",
     Packed: "bg-purple-100 text-purple-700",
     Shipped: "bg-blue-100 text-blue-700",
     Delivered: "bg-green-100 text-green-700",
+    Cancelled: "bg-red-100 text-red-700",
   };
+
+  const getNextStatus = (current) => {
+    if (current === "Processing") return "Packed";
+    if (current === "Accepted") return "Packed";
+    if (current === "Packed") return "Shipped";
+    if (current === "Shipped") return "Delivered";
+    return null;
+  };
+
+  const nextStatus = getNextStatus(order.orderStatus);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -58,6 +80,42 @@ const OrderDetailsPage = () => {
         <ArrowLeft className="size-5 mr-2 group-hover:-translate-x-1 transition-transform" />
         Back to Orders
       </Link>
+
+      {/* Seller Management Controls */}
+      {isSellerOfOrder &&
+        order.orderStatus !== "Delivered" &&
+        order.orderStatus !== "Cancelled" && (
+          <div className="bg-white rounded-3xl border border-teal-100 shadow-sm p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-teal-100 p-2 rounded-xl">
+                <Package className="text-teal-600 size-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-gray-900">Seller Controls</h4>
+                <p className="text-sm text-gray-500">Update the order status</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              {nextStatus && (
+                <button
+                  disabled={isUpdating}
+                  onClick={() => handleStatusUpdate(nextStatus)}
+                  className="flex-1 md:flex-none bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg shadow-teal-100 flex items-center justify-center gap-2"
+                >
+                  <Save className="size-5" />
+                  Mark as {nextStatus}
+                </button>
+              )}
+              <button
+                disabled={isUpdating}
+                onClick={() => handleStatusUpdate("Cancelled")}
+                className="flex-1 md:flex-none border-2 border-red-100 text-red-600 hover:bg-red-50 font-bold py-3 px-6 rounded-2xl transition-all flex items-center justify-center gap-2"
+              >
+                Cancel Order
+              </button>
+            </div>
+          </div>
+        )}
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         {/* Header */}
@@ -224,6 +282,30 @@ const OrderDetailsPage = () => {
               </p>
             </div>
           </div>
+
+          {/* Customer Info (For Sellers Only) */}
+          {isSellerOfOrder && (
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                  <Package className="text-blue-600 size-5" />
+                </div>
+                Customer Information
+              </h3>
+              <div className="bg-gray-50 border border-gray-100 p-6 rounded-2xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <p className="text-gray-500 text-sm">Customer Name</p>
+                    <p className="font-bold text-gray-900 text-lg">{order.user?.userName || "Guest"}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm text-right sm:text-left">Customer Email</p>
+                    <p className="font-bold text-blue-600">{order.user?.email || "N/A"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Payment Info */}
           <div>

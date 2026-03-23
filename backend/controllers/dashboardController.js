@@ -8,7 +8,9 @@ exports.getSellerStats = asyncErrorHandler(async (req, res) => {
 
   const [sellerProducts, allOrders] = await Promise.all([
     Product.find({ seller: sellerId }).lean(),
-    Order.find({ "orderItems.seller": sellerId }).lean(),
+    Order.find({ "orderItems.seller": sellerId })
+      .populate("user", "userName email")
+      .lean(),
   ]);
 
   const now = new Date();
@@ -73,3 +75,31 @@ exports.getSellerStats = asyncErrorHandler(async (req, res) => {
     orders: allOrders,
   });
 });
+  // ─── Seller Accept Order ────────────────────────────────────────────────
+  exports.acceptOrder = asyncErrorHandler(async (req, res) => {
+    const sellerId = req.user._id;
+    const { orderId } = req.body;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    // Only update the seller's items in the order
+    let updated = false;
+    order.orderItems.forEach(item => {
+      if (item.seller && item.seller.toString() === sellerId.toString()) {
+        if (order.orderStatus === "Processing") {
+          order.orderStatus = "Accepted";
+          updated = true;
+        }
+      }
+    });
+
+    if (!updated) {
+      return res.status(400).json({ success: false, message: "Order already accepted or not for this seller" });
+    }
+
+    await order.save();
+    res.json({ success: true, message: "Order accepted", order });
+  });

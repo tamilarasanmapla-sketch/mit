@@ -13,9 +13,18 @@ export const dashboardApi = createApi({
       query: () => ({ url: "/seller/stats", method: "GET" }),
       providesTags: ["SellerStats"],
     }),
+      acceptOrder: builder.mutation({
+        query: ({ orderId }) => ({
+          url: "/seller/accept-order",
+          method: "POST",
+          data: { orderId },
+        }),
+        invalidatesTags: ["SellerStats"],
+      }),
   }),
 });
 
 export const {
   useGetSellerStatsQuery,
+  useAcceptOrderMutation,
 } = dashboardApi;

@@ -22,9 +22,10 @@ export const cartApi = createApi({
       invalidatesTags: ["Cart"],
     }),
     removeFromCart: builder.mutation({
-      query: (productId) => ({
+      query: ({ productId, sellerId }) => ({
         url: `/${productId}`,
         method: "DELETE",
+        params: sellerId ? { sellerId } : undefined,
       }),
       invalidatesTags: ["Cart"],
     }),

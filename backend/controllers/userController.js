@@ -92,14 +92,16 @@ exports.createUser = asyncErrorHandler(async (req, res, next) => {
 
 // Update user by ID
 exports.updateUserById = asyncErrorHandler(async (req, res, next) => {
-  const { updateUserName, updatePassword } = req.body;
-  if (!updateUserName && !updatePassword) {
+  const { updateUserName, updatePassword, password, oldPassword } = req.body;
+  const nextPassword = updatePassword ?? password;
+  if (!updateUserName && !nextPassword) {
     return next(new HandleError("Please provide fields to update", 400));
   }
 
   const updatedUser = await UserService.updateUser(req.params.id, {
     userName: updateUserName,
-    password: updatePassword,
+    password: nextPassword,
+    oldPassword,
   });
 
   res.json({

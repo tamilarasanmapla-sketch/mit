@@ -29,7 +29,9 @@ const RegisterPage = () => {
     dispatch(setLoading(true));
 
     try {
-      const { data } = await axios.post("/api/users/createuser", formData);
+      const { data } = await axios.post("/api/users/createuser", formData, {
+        withCredentials: true,
+      });
       dispatch(setUser(data.user));
       toast.success("Account created successfully!");
       navigate("/");

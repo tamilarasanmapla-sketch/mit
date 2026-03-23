@@ -1,0 +1,83 @@
+﻿
+> frontend@0.0.0 build
+> vite build
+
+node.exe : Γû▓ [WARNING] 
+Duplicate key "description" 
+in object literal 
+[duplicate-object-key]
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE $NPM_CLI_JS 
+$args
++   ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo          
+    : NotSpecified: (Γû▓ [  
+  WARNING] D...ate-object   
+ -key]:String) [], Remot    
+eException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+
+    ../package.json:5:2:
+      5 Γöé   
+"description": 
+"∩┐╜∩┐╜#\u0000 \u0000e\u0000
+-\u0000c\u0000o\u0000m...
+        Γò╡   ~~~~~~~~~~~~~
+
+  The original key 
+"description" is here:
+
+    ../package.json:4:2:
+      4 Γöé   
+"description": "E-Commerce 
+Platform",
+        Γò╡   ~~~~~~~~~~~~~
+
+Γû▓ [WARNING] Duplicate key 
+"description" in object 
+literal 
+[duplicate-object-key]
+
+    ../package.json:6:2:
+      6 Γöé   
+"description": "E-Commerce 
+Platform",
+        Γò╡   ~~~~~~~~~~~~~
+
+  The original key 
+"description" is here:
+
+    ../package.json:4:2:
+      4 Γöé   
+"description": "E-Commerce 
+Platform",
+        Γò╡   ~~~~~~~~~~~~~
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 2294 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                 [39m[1m[2m  0.48 kB[22m[1m[22m[2m Γöé gzip:   0.31 kB[22m
+[2mdist/[22m[35massets/index-BmvL9m93.css  [39m[1m[2m 32.40 kB[22m[1m[22m[2m Γöé gzip:   6.04 kB[22m
+[2mdist/[22m[36massets/index-BRC4XYGB.js   [39m[1m[33m727.25 kB[39m[22m[2m Γöé gzip: 217.23 kB[22m
+[33m
+(!) Some chunks are larger 
+than 500 kB after 
+minification. Consider:
+- Using dynamic import() to 
+code-split the application
+- Use build.rollupOptions.ou
+tput.manualChunks to 
+improve chunking: https://ro
+llupjs.org/configuration-opt
+ions/#output-manualchunks
+- Adjust chunk size limit 
+for this warning via build.c
+hunkSizeWarningLimit.[39m
+[32mΓ£ô built in 11.80s[39m

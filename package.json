@@ -25,13 +25,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tamilarasan-k-6/e-com.git"
+    "url": "git+https://github.com/tamilarasan-k-6/tam.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/tamilarasan-k-6/e-com/issues"
+    "url": "https://github.com/tamilarasan-k-6/tam/issues"
   },
-  "homepage": "https://github.com/tamilarasan-k-6/e-com#readme"
+  "homepage": "https://github.com/tamilarasan-k-6/tam#readme"
 }

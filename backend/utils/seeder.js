@@ -3,8 +3,9 @@ const dotenv = require("dotenv");
 const Product = require("../models/Product");
 const products = require("../data/products.json");
 
+const path = require("path");
 // Setting up config file
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 mongoose.connect(process.env.DB_URL);
 
